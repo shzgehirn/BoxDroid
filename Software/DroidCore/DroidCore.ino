@@ -9,8 +9,11 @@ struct Actuator
 Actuator ServoActuator[10];//delcare 10 Servo Motor Object
 
 byte CurrentStep;
-int StepSize;
-int Increment;
+byte FramePosition[10];
+int  StepSize,Increment,i;
+byte FrameFinish = 10;
+
+unsigned long ServoTimer;
 
 void setup()
 {
@@ -31,13 +34,34 @@ void loop()
   
 }
 
-void Move(byte channel, byte target)
+void action()
+{  
+  int FrameStatus;
+  if((millis() - ServoTimer) >= 20)
+  {
+    FrameFinish = 10;
+    for(i=0; i++; i<10)
+    {
+      FrameStatus = Move(i,FramePosition[i]);
+      if(FrameStatus == 0)
+        FrameFinish--;  
+    }    
+    ServoTimer = millis();
+  }
+}
+
+void UpdatePosition()
 {
- static int newIcrement = 0; 
   
+}
+
+int Move(byte channel, byte target)
+{
+ int newIcrement = 0;   
  newIcrement = IncrementCal(ServoActuator[channel].CurrentPosition, target);
  ServoActuator[channel].CurrentPosition += newIcrement;
  ServoActuator[0].ServoObj.write(ServoActuator[channel].CurrentPosition);  
+ return newIcrement;
 }
 
 int IncrementCal(byte CurrentPos, byte TargetPos)
